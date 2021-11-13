@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @Builder
-@Data
+//@Data  --redundant
 public class CreateReservationRequestDTO {
 
     @NotNull

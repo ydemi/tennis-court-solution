@@ -3,17 +3,18 @@ package com.tenniscourts.reservations;
 import com.tenniscourts.exceptions.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @AllArgsConstructor
 public class ReservationService {
 
+	private final Logger LOGGER = LoggerFactory,getLogger(ReservationService.class);
     private final ReservationRepository reservationRepository;
-
     private final ReservationMapper reservationMapper;
 
     public ReservationDTO bookReservation(CreateReservationRequestDTO createReservationRequestDTO) {
@@ -31,6 +32,7 @@ public class ReservationService {
     }
 
     private Reservation cancel(Long reservationId) {
+    	LOGGER.info("Canceling reservation id :" + scheduleId);
         return reservationRepository.findById(reservationId).map(reservation -> {
 
             this.validateCancellation(reservation);
@@ -74,12 +76,16 @@ public class ReservationService {
     /*TODO: This method actually not fully working, find a way to fix the issue when it's throwing the error:
             "Cannot reschedule to the same slot.*/
     public ReservationDTO rescheduleReservation(Long previousReservationId, Long scheduleId) {
+    	LOGGER.info("Rescheduling schedule id :" + scheduleId);
+
         Reservation previousReservation = cancel(previousReservationId);
+        //get actual schedule
+        ScheduleDTO actualSchedule = scheduleService.findSchedule(scheduleId);
 
-        if (scheduleId.equals(previousReservation.getSchedule().getId())) {
-            throw new IllegalArgumentException("Cannot reschedule to the same slot.");
+        if (actualSchedule.getStartDateTime().equals(previousReservation.getSchedule().getStartDateTime())) {
+        	LOGGER.error("Cannot reschedule to the same slot.");
+        	throw new IllegalArgumentException("Cannot reschedule to the same slot.");
         }
-
         previousReservation.setReservationStatus(ReservationStatus.RESCHEDULED);
         reservationRepository.save(previousReservation);
 

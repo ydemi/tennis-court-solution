@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Builder
-@Data
+//@Data    -- redundant
 public class ReservationDTO {
 
     private Long id;
